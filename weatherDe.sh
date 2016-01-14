@@ -1,0 +1,1 @@
+curl -s http://www.wetter.de/deutschland/wetter-angermuende-18230230/wetterprognose.html | egrep "text-date|wt-color-temperature" | sed 's/<[^>]*>//g' | sed 'N;s/\n/\//' | sed 's/ //g' | sed  's/&deg;//g'
