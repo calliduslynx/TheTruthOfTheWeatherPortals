@@ -3,9 +3,7 @@ package de.mast.ttotwp;
 import java.time.LocalDateTime;
 
 public class Entry {
-    public static LocalDateTime centralTimeOfRecord;
-
-    public LocalDateTime timeOfRecord = centralTimeOfRecord;
+    public LocalDateTime timeOfRecord = Main.centralTimeOfRecord;
     public String        site;
     public String        location;
     public LocalDateTime targetTime;

@@ -1,4 +1,4 @@
-package de.mast.ttotwp.crawlers.util;
+package de.mast.ttotwp.util;
 
 public class TextStream {
     private String content;

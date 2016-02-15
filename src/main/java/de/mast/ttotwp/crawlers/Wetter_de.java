@@ -1,13 +1,12 @@
 package de.mast.ttotwp.crawlers;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import de.mast.ttotwp.*;
-import de.mast.ttotwp.crawlers.util.TextStream;
+import de.mast.ttotwp.util.TextStream;
 
-public class Wetter_de extends Crawler {
+public class Wetter_de extends WeatherService {
 
     @Override
     public void addTasks(List<Callable<List<Entry>>> tasks) {
@@ -28,21 +27,11 @@ public class Wetter_de extends Crawler {
         tasks.add(new Wetter_de_Crawler(14, "http://www.wetter.de/deutschland/wetter-angermuende-18230230/tag-15.html"));
     }
 
-    private class Wetter_de_Crawler implements Callable<List<Entry>> {
-        private String url;
-        private int daysInFuture;
-
-        Wetter_de_Crawler(int daysInFuture, String url) {
-            this.daysInFuture = daysInFuture;
-            this.url = url;
-        }
+    private class Wetter_de_Crawler extends Crawler {
+        Wetter_de_Crawler(int daysInFuture, String url) { super(daysInFuture, url); }
 
         @Override
-        public List<Entry> call() throws Exception {
-            List<Entry> list = new ArrayList<>();
-            String htmlContent = getHtmlContent(url);
-            TextStream stream = new TextStream(htmlContent);
-
+        protected void parse(TextStream stream, List<Entry> list) {
             while (true) {
                 boolean exists = stream.goBehind("<div class=\"forecast-date wt-font-semibold\">");
                 if (!exists) break;
@@ -67,21 +56,6 @@ public class Wetter_de extends Crawler {
 
                 list.add(entry);
             }
-
-            return list;
-        }
-
-        private Entry getEntry(int hour) {
-            Entry entry = new Entry();
-            entry.site = "wetter.de";
-            entry.location = "Angermünde";
-            entry.targetTime = LocalDateTime.now()
-                    .plusDays(daysInFuture)
-                    .withHour(hour)
-                    .withMinute(0)
-                    .withSecond(0)
-                    .withNano(0);
-            return entry;
         }
     }
 }

@@ -6,23 +6,32 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
 
-import de.mast.ttotwp.crawlers.Wetter_de;
+import de.mast.ttotwp.crawlers.*;
 
 public class Main {
     public static final int NUMBER_OF_THREADS = 500;
+    public static final LocalDateTime centralTimeOfRecord = LocalDateTime.now();
 
     public static void main(String[] args) throws Exception {
-        List<Crawler> crawlers = new ArrayList<>();
-        crawlers.add(new Wetter_de());
+        // ***** create list of services
+        List<WeatherService> weatherServices = new ArrayList<>();
+        weatherServices.add(new Wetter_de());
+        weatherServices.add(new Wetter_com());
 
+        // ***** retrieve crawlers from services
         List<Callable<List<Entry>>> tasks = new ArrayList<>();
-        crawlers.forEach(crawler -> crawler.addTasks(tasks));
+        weatherServices.forEach(weatherService -> {
+            int sizeBefore = tasks.size();
+            weatherService.addTasks(tasks);
+            Log.info("found weather service '" + weatherService.getServiceName() + "', "
+                     + (tasks.size() - sizeBefore) + " crawlers added");
+        });
 
-        Entry.centralTimeOfRecord = LocalDateTime.now();
-
+        // ***** start all services
         ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
         List<Future<List<Entry>>> futures = executor.invokeAll(tasks, 60, SECONDS);
 
+        // ***** get all results and shut down
         List<Entry> entries = new ArrayList<>();
         futures.stream().map(future -> {
             try {
@@ -35,7 +44,8 @@ public class Main {
           .forEach(list -> entries.addAll(list));
         executor.shutdown();
 
-        EntryWriter writer = new EntryWriter("'/tmp/result_'yyyy-MM-dd__HH-mm-ss'.json'");
+        // ***** write results into file
+        EntryWriter writer = new EntryWriter("'result_'yyyy-MM-dd__HH-mm-ss'.json'");
         entries.forEach(entry -> writer.write(entry));
         writer.close();
     }

@@ -4,6 +4,8 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.commons.io.FileUtils;
+
 public class EntryWriter {
     public static final String NL = "\n";
     StringBuilder b = new StringBuilder();
@@ -34,12 +36,11 @@ public class EntryWriter {
 
     public void close() {
         b.append(NL + "]");
-        System.out.println(b);
-//        try {
-//            FileUtils.write(file, b.toString());
-//        } catch (Exception e) {
-//            throw new IllegalStateException(e);
-//        }
+        try {
+            FileUtils.write(file, b.toString());
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
 
 }
